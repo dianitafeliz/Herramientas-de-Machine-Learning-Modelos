@@ -1,92 +1,195 @@
 # Machine Learning Tools — Taller Segundo Corte
 
-**Universidad Santo Tomás**
-Facultad de Ingeniería en Tecnologías de la Información y las Comunicaciones
-Programa de Ingeniería en Informática
-Espacio Académico: Machine Learning Tools (74273 — Plan 4, Nivel IX)
-Docente: Crisman Martinez B.
-Ciclo: 2026-02
-
----
+**Universidad Santo Tomás**  
+Facultad de Ingeniería en Tecnologías de la Información y las Comunicaciones  
+Programa de Ingeniería en Informática  
+Espacio académico: **Machine Learning Tools**  
+Docente: **Crisman Martinez B.**  
+Ciclo: **2026-02**
 
 ## 1. Descripción del proyecto
 
-Este proyecto desarrolla el **Anexo N.3 — Taller de Algoritmos de Machine Learning** del Segundo Corte. Una empresa dispone de datos históricos de clientes, compras, visitas al sitio web, inversión publicitaria, productos y comportamiento de usuarios, y requiere modelos capaces de:
+Este repositorio contiene el desarrollo del **Taller de Algoritmos de Machine Learning del Segundo Corte**.
 
-- Predecir el valor generado por un cliente (**regresión**).
-- Determinar si un cliente realizará o no una compra (**clasificación binaria**).
-- Clasificar nuevos clientes según su similitud con clientes históricos (**K-NN**).
-- Clasificar clientes mediante reglas obtenidas de sus características (**Árbol de Decisión**).
+El ejercicio parte de un caso en el que una empresa cuenta con información histórica de sus clientes, sus visitas al sitio web, inversión en publicidad y comportamiento de los usuarios. A partir de estos datos se aplican diferentes algoritmos de aprendizaje supervisado para resolver problemas de regresión y clasificación.
 
-Para ello se investigan, implementan y comparan cuatro algoritmos de aprendizaje supervisado:
+Los modelos utilizados son:
 
-| Algoritmo | Tipo | Uso en el caso |
+| Algoritmo | Tipo de problema | Aplicación |
 |---|---|---|
-| Regresión Lineal | Regresión | Predecir el valor generado por el cliente |
-| Regresión Logística | Clasificación | Determinar compra / no compra |
-| K-Nearest Neighbors (K-NN) | Clasificación | Clasificar clientes por similitud |
+| Regresión Lineal | Regresión | Predecir el valor mensual de ventas |
+| Regresión Logística | Clasificación binaria | Determinar si un cliente realiza una compra |
+| K-Nearest Neighbors (K-NN) | Clasificación | Clasificar clientes según su similitud |
 | Árbol de Decisión | Clasificación | Clasificar clientes mediante reglas |
 
-## 2. Dataset
+El objetivo no es solamente entrenar los modelos, sino también preparar correctamente los datos, evitar fuga de información, comparar diferentes configuraciones y analizar los resultados obtenidos.
 
-**Nombre:** `datos_clientes_ecommerce.csv`
-**Origen:** Dataset sintético, generado con `generar_dataset.py` (numpy/pandas), diseñado a la medida del caso práctico del Anexo N.3 para cubrir todas las variables solicitadas: clientes, compras, visitas al sitio web, inversión publicitaria, productos y comportamiento de usuario.
-**Registros:** ~4,100 filas (300 clientes únicos × 12 meses, formato largo por categoría de producto y canal)
-**Periodo cubierto:** octubre 2025 a septiembre 2026 (últimos 12 meses), con estacionalidad (más ventas en nov-dic)
-**Moneda:** Pesos colombianos (COP)
-**Semilla aleatoria:** 42 (reproducible)
-**Variable objetivo (clasificación):** `compra_actual` (0/1 — compró ese mes o no)
-**Variable objetivo (regresión):** `valor_mensual_ventas` (COP, entre $100.000 y $3.000.000 si hubo compra, 0 si no)
-**Diccionario de datos completo:** ver `docs/diccionario_datos.md`
+## 2. Datos utilizados
 
-| Categoría del enunciado | Columna |
-|---|---|
-| a. Clientes | `cliente_id`, `cliente_edad` |
-| b. Compras | `compras_categoria` |
-| c. Visitas al sitio web | `web_visitas_mes` |
-| d. Inversión publicitaria | `publicidad_inversion` |
-| e. Productos | `producto_categoria` |
-| f. Comportamiento de usuarios | `comportamiento_usuario` (Web / Aplicación / Ambos — siempre poblado) |
-| — | `canal_compra` (canal de cada compra específica; `"Sin compra"` si no aplica) |
-| Dimensión temporal | `periodo` (YYYY-MM) |
-| — | `valor_mensual_ventas` (objetivo regresión) |
-| — | `compra_actual` (objetivo clasificación) |
+El conjunto de datos utilizado en el ejercicio es `base_ML.csv`.
 
-El dataset está en **formato largo con dimensión temporal**: un cliente puede aparecer en varias filas el mismo mes si compró en distintas categorías, o incluso en la **misma categoría por ambos canales por separado**. Para modelar a nivel cliente-mes, agrupar por (`cliente_id`, `periodo`) primero (ver `docs/diccionario_datos.md`).
+Cuenta con:
 
-Solo hay valores faltantes reales en `cliente_edad` (3%) y `publicidad_inversion` (4%), a propósito para el ejercicio de imputación; el resto de columnas relacionadas con la compra usan `"Sin compra"` como categoría explícita en vez de nulos.
-- **Outliers** en `publicidad_inversion` (20 registros), para justificar el escalado robusto antes de algoritmos geométricos como K-NN.
+- **6.000 registros**
+- **500 clientes**
+- **12 periodos**
+- Información sobre edad, visitas al sitio web, inversión en publicidad y comportamiento del usuario.
+- Variables relacionadas con las compras y el valor mensual de ventas.
 
-## 3. Estructura del proyecto
+Las variables objetivo utilizadas son:
 
-```
-├── README.md                  # Este archivo
-├── data/
-│   └── datos_clientes_ecommerce.csv
-├── docs/
-│   ├── diccionario_datos.md     # Diccionario de datos
-│   └── generar_dataset.py       # Script de generación del dataset
+- `valor_mensual_ventas`: objetivo para el problema de regresión.
+- `compra_actual`: objetivo para los problemas de clasificación.
+
+Antes de entrenar los modelos se realizó una revisión de los datos para identificar valores faltantes, variables categóricas y posibles problemas de fuga de información.
+
+### Preparación de los datos
+
+Se identificaron **367 valores faltantes** en total:
+
+- `cliente_edad`: 158
+- `publicidad_inversion`: 209
+
+Para el preprocesamiento se utilizaron:
+
+- Imputación por mediana para las variables numéricas.
+- `StandardScaler` para estandarizar las variables numéricas.
+- `OneHotEncoder` para transformar las variables categóricas.
+- División de los datos en **80 % para entrenamiento y 20 % para prueba**.
+- División estratificada para los modelos de clasificación.
+
+También se revisaron las variables que podían generar **data leakage**. Algunas variables relacionadas directamente con la compra actual no se utilizaron para predecir `compra_actual`. Para el comportamiento del visitante se creó `tipo_visitante_lag`, utilizando la información del periodo anterior.
+
+## 3. Metodología
+
+El desarrollo de los modelos siguió un flujo común:
+
+**Carga de datos → exploración → preparación → selección de variables → preprocesamiento → división train/test → entrenamiento → validación y ajuste → predicción → evaluación**
+
+Para los modelos de clasificación se utilizaron métricas como:
+
+- Accuracy
+- Precision
+- Recall
+- F1-score
+- ROC-AUC
+- Curva Precision-Recall
+
+Para la regresión se utilizaron:
+
+- MAE
+- MSE
+- RMSE
+- R²
+
+Además, se utilizó **validación cruzada y GridSearchCV** para analizar diferentes configuraciones de K-NN y del Árbol de Decisión.
+
+## 4. Modelos desarrollados
+
+### Regresión Lineal
+
+Se utilizó para predecir `valor_mensual_ventas`, una variable numérica continua.
+
+Resultados obtenidos en el conjunto de prueba:
+
+| Métrica | Resultado |
+|---|---:|
+| MAE | 179.304 |
+| MSE | 59.445.055.154 |
+| RMSE | 243.814 |
+| R² | 0,237 |
+
+El R² indica que el modelo explica aproximadamente el 23,7 % de la variabilidad observada en las ventas.
+
+### Regresión Logística
+
+Se utilizó para determinar si un cliente realiza una compra (`1`) o no realiza una compra (`0`).
+
+Con el umbral de clasificación de 0,5 se obtuvieron aproximadamente:
+
+| Métrica | Resultado |
+|---|---:|
+| Accuracy | 0,637 |
+| Precision | 0,649 |
+| Recall | 0,844 |
+| F1-score | 0,734 |
+| ROC-AUC | ≈ 0,659 |
+
+También se probaron diferentes valores de threshold. Entre los valores evaluados, el umbral de **0,4** obtuvo el mejor F1-score, con aproximadamente **0,759**.
+
+### K-Nearest Neighbors (K-NN)
+
+K-NN clasifica una nueva observación según la similitud que presenta con otras observaciones del conjunto de datos.
+
+Para seleccionar la configuración se utilizó `GridSearchCV` con validación cruzada. La configuración seleccionada fue:
+
+- `n_neighbors = 21`
+- `weights = 'uniform'`
+
+En la comparación final, el modelo obtuvo aproximadamente:
+
+| Métrica | Resultado |
+|---|---:|
+| Accuracy | 0,628 |
+| Precision | 0,654 |
+| Recall | 0,791 |
+| F1-score | 0,716 |
+| ROC-AUC | 0,635 |
+
+### Árbol de Decisión
+
+El Árbol de Decisión permite clasificar los clientes mediante una serie de reglas basadas en sus características.
+
+El modelo inicial presentó señales de **sobreajuste**, por lo que se utilizó `GridSearchCV` para controlar su complejidad.
+
+La configuración seleccionada fue:
+
+- `max_depth = 5`
+- `min_samples_leaf = 5`
+- `min_samples_split = 2`
+
+En la ejecución optimizada se obtuvo:
+
+| Métrica | Resultado |
+|---|---:|
+| Accuracy | 0,645 |
+| Precision | 0,655 |
+| Recall | 0,850 |
+| F1-score | 0,740 |
+| ROC-AUC | 0,663 |
+
+El ajuste de la complejidad permitió obtener un comportamiento más estable sobre los datos de prueba que el árbol inicial.
+
+## 5. Comparación
+
+Los resultados de los modelos de clasificación muestran que no existe un único modelo que sea el mejor para cualquier situación. La elección depende del objetivo y de la métrica que se considere más importante.
+
+De forma general:
+
+- **Regresión Lineal**: adecuada para predecir valores continuos como las ventas.
+- **Regresión Logística**: adecuada para determinar compra o no compra y trabajar con probabilidades.
+- **K-NN**: útil cuando la similitud entre clientes es un criterio importante.
+- **Árbol de Decisión**: útil cuando se necesitan reglas de decisión fáciles de interpretar.
+
+También se observó la importancia de utilizar diferentes métricas. Por ejemplo, Precision permite analizar los falsos positivos, mientras que Recall permite observar qué proporción de los casos positivos reales fue detectada.
+
+## 6. Estructura del repositorio
+
+La estructura debe corresponder a los archivos que realmente se publiquen en GitHub. Una organización sencilla puede ser:
+
+```text
+/
+├── README.md
+├── base_ML.csv
 ├── notebooks/
-│   ├── 01_eda.ipynb            # Análisis exploratorio de datos
-│   ├── 02_regresion_lineal.ipynb
-│   ├── 03_regresion_logistica.ipynb
-│   ├── 04_knn.ipynb
-│   ├── 05_arbol_decision.ipynb
-│   └── 06_comparacion_modelos.ipynb
-├── src/
-│   ├── preprocessing.py        # Imputación, escalado, codificación
-│   ├── models.py                # Entrenamiento de los 4 algoritmos
-│   └── evaluation.py            # Métricas y validación cruzada
 ├── docs/
-│   └── taller_ml_tools.docx     # Documento de entrega (Anexo N.4)
-├── requirements.txt
-└── video/
-    └── url_video.txt            # URL del video (Anexo N.5)
+└── requirements.txt
 ```
 
-## 4. Requisitos
+## 7. Requisitos
 
-- Python 3.10+
+Para ejecutar el proyecto se requiere Python 3.10 o superior y las principales librerías utilizadas son:
+
 - pandas
 - numpy
 - scikit-learn
@@ -100,41 +203,24 @@ Instalación:
 pip install -r requirements.txt
 ```
 
-## 5. Metodología (pipeline general)
+## 8. Conclusiones
 
-1. **Carga y exploración de datos** (EDA): tipos de variable, valores nulos, distribución de clases.
-2. **Ingeniería de datos**: imputación de valores faltantes, codificación de variables categóricas, escalado de características.
-3. **División de datos**: entrenamiento / prueba (train_test_split), estratificado según la variable objetivo.
-4. **Entrenamiento de modelos**: Regresión Lineal, Regresión Logística, K-NN y Árbol de Decisión.
-5. **Validación cruzada (K-Fold)** y ajuste de hiperparámetros con GridSearchCV.
-6. **Evaluación**:
-   - Regresión: MAE, MSE, RMSE, R².
-   - Clasificación: Accuracy, Precision, Recall, F1-score, ROC-AUC, PR-Curve.
-7. **Comparación de modelos** y selección del umbral de decisión óptimo según el impacto de falsos positivos y falsos negativos.
-8. **Conclusiones** y recomendaciones para producción (monitoreo, robustez, control de cambios en los datos).
+El desarrollo del ejercicio permitió comprobar que la preparación de los datos es una parte fundamental del proceso de Machine Learning. La imputación de valores faltantes, la transformación de variables categóricas, el escalamiento y la revisión de posibles fugas de información influyen directamente en la calidad de los modelos.
 
-## 6. Resultados
+También se observó que cada algoritmo responde a una necesidad diferente y que la evaluación no debe depender de una sola métrica. La validación cruzada y `GridSearchCV` permitieron comparar configuraciones y controlar aspectos como la elección de K en K-NN y la complejidad del Árbol de Decisión.
 
-*(Se completa una vez ejecutados los notebooks)*
+Finalmente, el análisis del Árbol de Decisión permitió identificar un caso de sobreajuste y comprobar cómo el ajuste de hiperparámetros puede mejorar la generalización del modelo frente a datos nuevos.
 
-| Modelo | Métrica principal | Resultado |
-|---|---|---|
-| Regresión Lineal | R² | — |
-| Regresión Logística | ROC-AUC | — |
-| K-NN | F1-score | — |
-| Árbol de Decisión | F1-score | — |
+## 9. Referencias
 
-## 7. Autor
+Géron, A. (2022). *Hands-on machine learning with Scikit-Learn, Keras, and TensorFlow* (3rd ed.). O'Reilly Media.
 
-- **Nombre del estudiante:** _[Completar]_
-- **Código:** _[Completar]_
-- **Programa:** Ingeniería en Informática
-- **Universidad Santo Tomás**
+James, G., Witten, D., Hastie, T., Tibshirani, R., & Taylor, J. (2023). *An introduction to statistical learning: With applications in Python*. Springer.
 
-## 8. Referencias (APA 7)
+Martinez Barrera, C. (2026). *Aula Virtual USTA. Machine Learning Tools*. Universidad Santo Tomás.
 
-Martinez Barrera, C. (2026). *Aula Virtual USTA. Machine Learning Tools*. Universidad Santo Tomás. Consultado en julio de 2026.
+McKinney, W. (2022). *Python for data analysis: Data wrangling with Pandas, NumPy, and Jupyter* (3rd ed.). O'Reilly Media.
 
-Pedregosa, F., et al. (2011). Scikit-learn: Machine Learning in Python. *Journal of Machine Learning Research*, 12, 2825-2830.
+Müller, A. C., & Guido, S. (2016). *Introduction to machine learning with Python: A guide for data scientists*. O'Reilly Media.
 
-Sakar, C., & Kastro, Y. (2018). *Online Shoppers Purchasing Intention Dataset*. UCI Machine Learning Repository.
+Pedregosa, F., et al. (2011). Scikit-learn: Machine learning in Python. *Journal of Machine Learning Research, 12*, 2825–2830.
