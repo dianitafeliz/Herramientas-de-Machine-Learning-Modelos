@@ -213,14 +213,8 @@ Finalmente, el análisis del Árbol de Decisión permitió identificar un caso d
 
 ## 9. Referencias
 
-Géron, A. (2022). *Hands-on machine learning with Scikit-Learn, Keras, and TensorFlow* (3rd ed.). O'Reilly Media.
+B., C. M. (2026). Herramientas de Machine Learning A. Bogotá: Universidad Santo Tomás.
+B., C. M. (2026). Herramientas de Machine Learning B. Bogotá: Universidad Santo Tomás.
+Géron, A. (2017). Hands-on machine learning with Scikit-Learn, Keras, and TensorFlow . Beijing - Boston - Farnham - Sebastopol - Tokyo: Jupiter.
 
-James, G., Witten, D., Hastie, T., Tibshirani, R., & Taylor, J. (2023). *An introduction to statistical learning: With applications in Python*. Springer.
 
-Martinez Barrera, C. (2026). *Aula Virtual USTA. Machine Learning Tools*. Universidad Santo Tomás.
-
-McKinney, W. (2022). *Python for data analysis: Data wrangling with Pandas, NumPy, and Jupyter* (3rd ed.). O'Reilly Media.
-
-Müller, A. C., & Guido, S. (2016). *Introduction to machine learning with Python: A guide for data scientists*. O'Reilly Media.
-
-Pedregosa, F., et al. (2011). Scikit-learn: Machine learning in Python. *Journal of Machine Learning Research, 12*, 2825–2830.
